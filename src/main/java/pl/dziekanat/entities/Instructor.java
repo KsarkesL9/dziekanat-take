@@ -17,23 +17,27 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class Subject {
+public class Instructor {
 
 	@Id
 	@GeneratedValue
 	private Long id;
 
-	private String name;
+	private String firstName;
 
-	private Integer ects;
+	private String lastName;
 
-	private Integer semesterNumber;
-	
+	private String email;
+
+	private String title;
+
+	private String department;
+
 	@JsonIgnore
-	@OneToMany(mappedBy = "subject")
+	@OneToMany(mappedBy = "instructor")
 	private Set<Grade> grades = new HashSet<>();
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "subject")
+	@OneToMany(mappedBy = "instructor")
 	private Set<SubjectAssignment> assignments = new HashSet<>();
 }

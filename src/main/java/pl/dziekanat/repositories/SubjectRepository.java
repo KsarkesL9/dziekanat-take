@@ -1,19 +1,18 @@
 package pl.dziekanat.repositories;
 
-import org.springframework.data.repository.CrudRepository;
-import pl.dziekanat.entities.Subject;
-
 import java.util.List;
+
+import org.springframework.data.repository.CrudRepository;
+
+import pl.dziekanat.entities.Subject;
 
 public interface SubjectRepository extends CrudRepository<Subject, Long> {
 
-    List<Subject> findAll();
+	List<Subject> findByName(String name);
 
-    List<Subject> findByName(String name);
+	List<Subject> findByNameLike(String name);
 
-    List<Subject> findByNameContaining(String name);
+	List<Subject> findBySemesterNumber(Integer semesterNumber);
 
-    List<Subject> findBySemesterNumber(Integer semesterNumber);
-
-    List<Subject> findByEctsGreaterThan(Integer ects);
+	List<Subject> findByEctsGreaterThan(Integer ects);
 }
