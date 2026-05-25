@@ -10,13 +10,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 public class Subject {
 
 	@Id
@@ -37,3 +35,4 @@ public class Subject {
 	@OneToMany(mappedBy = "subject")
 	private Set<SubjectAssignment> assignments = new HashSet<>();
 }
+

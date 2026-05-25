@@ -14,14 +14,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pl.dziekanat.enums.StudentStatus;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 public class Student {
 
 	@Id
@@ -52,3 +50,4 @@ public class Student {
 	@OneToMany(mappedBy = "student")
 	private Set<Grade> grades = new HashSet<>();
 }
+

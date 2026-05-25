@@ -10,13 +10,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 public class Instructor {
 
 	@Id
@@ -32,10 +30,6 @@ public class Instructor {
 	private String title;
 
 	private String department;
-
-	@JsonIgnore
-	@OneToMany(mappedBy = "instructor")
-	private Set<Grade> grades = new HashSet<>();
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "instructor")

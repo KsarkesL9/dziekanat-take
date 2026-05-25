@@ -7,14 +7,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import pl.dziekanat.enums.InstructorRole;
 
 @Entity
 @Getter
 @Setter
-@NoArgsConstructor
 public class SubjectAssignment {
 
     @Id

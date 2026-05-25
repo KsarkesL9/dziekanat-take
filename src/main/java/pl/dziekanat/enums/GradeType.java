@@ -1,5 +1,5 @@
 package pl.dziekanat.enums;
 
 public enum GradeType {
-	EXAM, MIDTERM, PROJECT, ASSIGNMENT
+	EXAM, MIDTERM, PROJECT, ASSIGNMENT, END
 }
