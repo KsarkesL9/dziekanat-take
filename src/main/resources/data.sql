@@ -131,6 +131,121 @@ insert into grade(id, grade_value, date_issued, grade_type, academic_year, attem
 insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (34, 5.0, '2024-06-20', 'END', '2023/2024', 1, 7, 10);
 insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (35, 5.0, '2024-06-20', 'END', '2023/2024', 1, 7, 11);
 
+-- === Scenariusz 6: Identyfikacja przedmiotow problemowych ===
+-- Lata analizy: 2021/2022 i 2022/2023, prog niezdawalnosci: 0.3 (30%)
+-- Oczekiwany wynik: przedmioty 12 i 13 POWINNY sie pojawic, przedmiot 14 NIE.
+
+-- Nowe przedmioty
+insert into subject(id, name, ects, semester_number) values (12, 'Statystyka', 5, 4);
+insert into subject(id, name, ects, semester_number) values (13, 'Rachunek rozniczkowy', 6, 2);
+insert into subject(id, name, ects, semester_number) values (14, 'Historia informatyki', 2, 1);
+
+-- Nowy prowadzacy
+insert into instructor(id, first_name, last_name, email, title, department)
+  values (4, 'Diana', 'Docentska', 'd.docentska@example.com', 'dr hab.', 'Informatyka');
+
+-- Nowi studenci
+insert into student(id, first_name, last_name, index_number, email, semester, field_of_study, status, enrollment_date, graduation_date)
+  values (8,  'Aleksandra', 'Wojcik',     '400001', 'a.wojcik@example.com',     5, 'Informatyka', 'ACTIVE', '2022-10-01', null);
+insert into student(id, first_name, last_name, index_number, email, semester, field_of_study, status, enrollment_date, graduation_date)
+  values (9,  'Bartosz',    'Kaminski',   '400002', 'b.kaminski@example.com',   5, 'Informatyka', 'ACTIVE', '2022-10-01', null);
+insert into student(id, first_name, last_name, index_number, email, semester, field_of_study, status, enrollment_date, graduation_date)
+  values (10, 'Celina',     'Nowacka',    '400003', 'c.nowacka@example.com',    5, 'Informatyka', 'ACTIVE', '2022-10-01', null);
+insert into student(id, first_name, last_name, index_number, email, semester, field_of_study, status, enrollment_date, graduation_date)
+  values (11, 'Damian',     'Michalski',  '400004', 'd.michalski@example.com',  3, 'Informatyka', 'ACTIVE', '2023-10-01', null);
+
+-- Obsady dla scenariusza 6
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (6,  '2021/2022', 'LECTURER',          3, 12, 1); -- Statystyka - prof. Profesorski
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (7,  '2022/2023', 'LECTURER',          3, 12, 4); -- Statystyka - dr hab. Docentska
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (8,  '2021/2022', 'LECTURER',          4, 13, 2); -- Rachunek rozniczkowy - dr Doktorska
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (9,  '2022/2023', 'LECTURER',          4, 13, 4); -- Rachunek rozniczkowy - dr hab. Docentska
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (10, '2021/2022', 'EXERCISE_INSTRUCTOR', 2, 14, 3); -- Historia informatyki - mgr Magistrowski
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (11, '2022/2023', 'EXERCISE_INSTRUCTOR', 2, 14, 3); -- Historia informatyki - mgr Magistrowski
+
+-- Oceny "Statystyka" (id=12) - PRZEDMIOT PROBLEMOWY
+-- 2021/2022, attempt=1: 3 oblane / 4 ogolnie = 75%
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (36, 2.0, '2022-02-10', 'END', '2021/2022', 1, 8,  12);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (37, 2.0, '2022-02-10', 'END', '2021/2022', 1, 9,  12);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (38, 2.0, '2022-02-10', 'END', '2021/2022', 1, 10, 12);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (39, 4.0, '2022-02-10', 'END', '2021/2022', 1, 11, 12);
+-- 2022/2023, attempt=1: 2 oblane / 3 = 66.7%
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (40, 2.0, '2023-02-10', 'END', '2022/2023', 1, 8,  12);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (41, 2.0, '2023-02-10', 'END', '2022/2023', 1, 9,  12);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (42, 5.0, '2023-02-10', 'END', '2022/2023', 1, 11, 12);
+
+-- Oceny "Rachunek rozniczkowy" (id=13) - PRZEDMIOT PROBLEMOWY
+-- 2021/2022, attempt=1: 3 oblane / 4 = 75%
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (43, 2.0, '2022-06-15', 'END', '2021/2022', 1, 8,  13);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (44, 2.0, '2022-06-15', 'END', '2021/2022', 1, 9,  13);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (45, 2.0, '2022-06-15', 'END', '2021/2022', 1, 10, 13);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (46, 3.5, '2022-06-15', 'END', '2021/2022', 1, 11, 13);
+-- 2022/2023, attempt=1: 2 oblane / 3 = 66.7%
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (47, 2.0, '2023-06-15', 'END', '2022/2023', 1, 8,  13);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (48, 2.0, '2023-06-15', 'END', '2022/2023', 1, 10, 13);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (49, 4.0, '2023-06-15', 'END', '2022/2023', 1, 11, 13);
+
+-- Oceny "Historia informatyki" (id=14) - NIE PROBLEMOWY
+-- 2021/2022, attempt=1: 4 oblane / 4 = 100% (przekracza prog)
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (50, 2.0, '2022-01-20', 'END', '2021/2022', 1, 8,  14);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (51, 2.0, '2022-01-20', 'END', '2021/2022', 1, 9,  14);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (52, 2.0, '2022-01-20', 'END', '2021/2022', 1, 10, 14);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (53, 2.0, '2022-01-20', 'END', '2021/2022', 1, 11, 14);
+-- 2022/2023, attempt=1: 0 oblane / 3 = 0% (nie przekracza progu -> przedmiot odpada)
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (54, 4.0, '2023-01-20', 'END', '2022/2023', 1, 8,  14);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (55, 5.0, '2023-01-20', 'END', '2022/2023', 1, 9,  14);
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id) values (56, 4.5, '2023-01-20', 'END', '2022/2023', 1, 10, 14);
+
+-- === Scenariusz 7: Detekcja rezygnacji ===
+-- Rok zapytania: 2024/2025
+-- Oczekiwane wyniki: studenci ACTIVE bez ocen w 2024/2025 i z enrollment > 3 mies. temu:
+--   - student 12 (Krzysztof Widmo) POWINIEN sie pojawic - ostatnia ocena: 2022-06-15
+--   - student 13 (Natalia Swiezak) NIE POWINNA sie pojawic - zapisana 2026-05-01 (< 3 mies.)
+--   (oraz studenci 4-11 z wczesniejszych scenariuszy, ktorzy tez nie maja ocen w 2024/2025)
+
+-- Student "duch" - ACTIVE, brak ocen w 2024/2025, dawno zapisany, ma oceny historyczne
+insert into student(id, first_name, last_name, index_number, email, semester, field_of_study, status, enrollment_date, graduation_date)
+  values (12, 'Krzysztof', 'Widmo', '500001', 'k.widmo@example.com', 4, 'Informatyka', 'ACTIVE', '2020-10-01', null);
+
+-- Student swiezo zapisany - ACTIVE, brak ocen w 2024/2025, ALE enrolled < 3 miesiace temu
+insert into student(id, first_name, last_name, index_number, email, semester, field_of_study, status, enrollment_date, graduation_date)
+  values (13, 'Natalia', 'Swiezak', '500002', 'n.swiezak@example.com', 1, 'Informatyka', 'ACTIVE', '2026-05-01', null);
+
+-- Ocena historyczna dla studenta 12 (Widmo) - z roku 2022/2023, sluzy jako lastGradeDate
+insert into grade(id, grade_value, date_issued, grade_type, academic_year, attempt_number, student_id, subject_id)
+  values (57, 3.0, '2022-06-15', 'END', '2022/2023', 1, 12, 5);
+
+-- === Scenariusz 8: Nominacja prowadzacego w nowym roku akademickim ===
+-- Zapytanie: subjectId=1, role=LECTURER, academicYear=2025/2026, maxHoursPerWeek=20
+-- Oczekiwany wynik:
+--   - dr Doktorska (inst. 2) POWINNA sie pojawic: 2 lata doswiadczenia z subj.1, 4h w 2025/2026
+--   - prof. Profesorski (inst. 1) NIE POWINIEN: 1 rok doswiadczenia z subj.1, ale 22h w 2025/2026 (przeciazony)
+--   - dr hab. Docentska (inst. 4) NIE POWINNA: brak doswiadczenia z subj.1
+--   - mgr Magistrowski (inst. 3) NIE POWINIEN: tytul nie kwalifikuje do LECTURER
+
+-- Przeszle obsady subject=1 (Inzynieria oprogramowania) jako historia doswiadczen
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (12, '2023/2024', 'LECTURER', 3, 1, 1); -- prof. Profesorski: 1 rok z subj.1
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (13, '2023/2024', 'LECTURER', 3, 1, 2); -- dr Doktorska: rok 1 z subj.1
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (14, '2024/2025', 'LECTURER', 3, 1, 2); -- dr Doktorska: rok 2 z subj.1 (wyzsze doswiadczenie)
+
+-- Obciazenie prowadzacych w docelowym roku 2025/2026
+-- prof. Profesorski: 12 + 10 = 22h/tyg -> PRZECIAZONY (>= 20)
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (15, '2025/2026', 'LECTURER', 12, 2, 1);
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (16, '2025/2026', 'LECTURER', 10, 3, 1);
+-- dr Doktorska: tylko 4h/tyg -> NIE przeciazony
+insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)
+  values (17, '2025/2026', 'LAB_INSTRUCTOR', 4, 5, 2);
+
 -- ===== Reset sekwencji (zgodnie ze stylem wykladowcy) =====
 alter sequence student_seq restart with (select max(id) + 1 from student);
 alter sequence subject_seq restart with (select max(id) + 1 from subject);

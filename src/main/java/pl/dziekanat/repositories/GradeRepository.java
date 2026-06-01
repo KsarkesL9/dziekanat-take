@@ -1,6 +1,7 @@
 package pl.dziekanat.repositories;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.repository.CrudRepository;
 
@@ -26,4 +27,8 @@ public interface GradeRepository extends CrudRepository<Grade, Long> {
 	List<Grade> findByStudentIdAndSubjectId(Long studentId, Long subjectId);
 
 	List<Grade> findByAttemptNumberGreaterThan(Integer attemptNumber);
+
+	List<Grade> findByAcademicYearAndGradeType(String academicYear, GradeType gradeType);
+
+	Optional<Grade> findFirstByStudentIdOrderByDateIssuedDesc(Long studentId);
 }

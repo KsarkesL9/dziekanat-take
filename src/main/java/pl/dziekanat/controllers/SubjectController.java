@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import pl.dziekanat.entities.Subject;
 import pl.dziekanat.repositories.SubjectRepository;
-
 @Controller
 @RequestMapping("/subject")
 public class SubjectController {
