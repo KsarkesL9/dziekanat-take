@@ -1,0 +1,869 @@
+{
+	"info": {
+		"_postman_id": "7f654b2d-c20e-4ab8-91db-df4bb4a64d1f",
+		"name": "Dziekanat - Scenariusze Testowe",
+		"description": "Kolekcja testów Postman dla systemu obsługi dziekanatu. Zawiera 8 scenariuszy biznesowych zaimplementowanych w ScenarioController.\n\n### Zmienne kolekcji:\n* `baseUrl` - Adres bazowy aplikacji (domyślnie `http://localhost:8080`)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "S1: Ukończenie studiów (Graduation)",
+			"description": "Scenariusz 1: Weryfikacja możliwości ukończenia studiów przez studenta.\nSprawdza oceny końcowe (END) z ostatniego semestru studenta, uwzględniając poprawki (najwyższy numer próby).",
+			"item": [
+				{
+					"name": "Kowalski - Ukończenie pomyślne",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Student can graduate\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.canGraduate).to.eql(true);",
+									"    pm.expect(jsonData.failedSubjects).to.be.an('array').that.is.empty;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/graduation?indexNumber=123456",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"graduation"
+							],
+							"query": [
+								{
+									"key": "indexNumber",
+									"value": "123456",
+									"description": "Indeks Jana Kowalskiego (powinien ukończyć, bo poprawił ocenę na 4.0)"
+								}
+							]
+						},
+						"description": "Sprawdza przypadek studenta Kowalskiego (indeks 123456), który w pierwszej próbie oblał Inżynierię Oprogramowania, ale poprawił ją na 4.0. Powinien móc ukończyć studia."
+					},
+					"response": []
+				},
+				{
+					"name": "Nowak - Brak zaliczenia przedmiotu",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Student cannot graduate\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.canGraduate).to.eql(false);",
+									"    pm.expect(jsonData.failedSubjects.length).to.be.greaterThan(0);",
+									"    pm.expect(jsonData.failedSubjects[0].name).to.eql(\"Inzynieria oprogramowania\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/graduation?indexNumber=654321",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"graduation"
+							],
+							"query": [
+								{
+									"key": "indexNumber",
+									"value": "654321",
+									"description": "Indeks Anny Nowak (nieukończona Inżynieria Oprogramowania)"
+								}
+							]
+						},
+						"description": "Sprawdza przypadek studentki Anny Nowak (indeks 654321), która ma niezaliczenie z Inżynierii Oprogramowania w ostatnim semestrze i w związku z tym nie może ukończyć studiów."
+					},
+					"response": []
+				},
+				{
+					"name": "Nieistniejący student - Błąd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/graduation?indexNumber=999999",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"graduation"
+							],
+							"query": [
+								{
+									"key": "indexNumber",
+									"value": "999999",
+									"description": "Niepoprawny indeks"
+								}
+							]
+						},
+						"description": "Próba wywołania scenariusza ukończenia studiów dla nieistniejącego indeksu studenta (999999). Powinno zwrócić błąd (np. 404 lub 500 w zależności od konfiguracji Springa)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "S2: Powrót z urlopu dziekańskiego",
+			"description": "Scenariusz 2: Zmiana statusu studenta z DEAN_LEAVE na ACTIVE i korekta semestru.\nOperacja dozwolona tylko dla studentów będących w stanie DEAN_LEAVE.",
+			"item": [
+				{
+					"name": "Wiśniewski - Pomyślny powrót",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Student status is ACTIVE and semester is updated\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.status).to.eql(\"ACTIVE\");",
+									"    pm.expect(jsonData.semester).to.eql(5);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/return-from-leave?indexNumber=777777&semester=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"return-from-leave"
+							],
+							"query": [
+								{
+									"key": "indexNumber",
+									"value": "777777",
+									"description": "Indeks Piotra Wiśniewskiego (jest na urlopie dziekańskim)"
+								},
+								{
+									"key": "semester",
+									"value": "5",
+									"description": "Nowy semestr, na który wraca student"
+								}
+							]
+						},
+						"description": "Pomyślny powrót z urlopu dziekańskiego studenta Piotra Wiśniewskiego (indeks 777777, status DEAN_LEAVE). Po tej akcji status powinien zmienić się na ACTIVE, a semestr na 5."
+					},
+					"response": []
+				},
+				{
+					"name": "Kowalski - Błąd (Nie jest na urlopie)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 409 Conflict\", function () {",
+									"    pm.response.to.have.status(409);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/return-from-leave?indexNumber=123456&semester=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"return-from-leave"
+							],
+							"query": [
+								{
+									"key": "indexNumber",
+									"value": "123456",
+									"description": "Indeks Jana Kowalskiego (jest już ACTIVE)"
+								},
+								{
+									"key": "semester",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Próba przywrócenia z urlopu studenta Jana Kowalskiego (indeks 123456), który ma status ACTIVE (a nie DEAN_LEAVE). Powinno zwrócić błąd 409 Conflict."
+					},
+					"response": []
+				},
+				{
+					"name": "Nieistniejący student - Błąd",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404 or 500\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([404, 500]);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/return-from-leave?indexNumber=999999&semester=5",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"return-from-leave"
+							],
+							"query": [
+								{
+									"key": "indexNumber",
+									"value": "999999"
+								},
+								{
+									"key": "semester",
+									"value": "5"
+								}
+							]
+						},
+						"description": "Próba wywołania scenariusza powrotu z urlopu dla nieistniejącego studenta. Powinien zostać zwrócony status błędu (np. 404)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "S3: Rozliczenie semestru (Semester Settlement)",
+			"description": "Scenariusz 3: Rozliczenie semestru dla wszystkich aktywnych studentów.\nPromuje na wyższy semestr, jeśli student zdobył co najmniej 21 punktów ECTS z 30 możliwych (czyli suma niezaliczonych ECTS jest <= 9). Semestr 7 nie podlega promocji.",
+			"item": [
+				{
+					"name": "Rozliczenie semestru 2024/2025",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Verify students settlement\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // Szukamy poszczególnych studentów w raporcie",
+									"    var lewandowski = jsonData.find(s => s.lastName === 'Lewandowski');",
+									"    var dabrowska = jsonData.find(s => s.lastName === 'Dabrowska');",
+									"    var zielinski = jsonData.find(s => s.lastName === 'Zielinski');",
+									"    var kowalski = jsonData.find(s => s.lastName === 'Kowalski');",
+									"    ",
+									"    if (lewandowski) {",
+									"        pm.expect(lewandowski.promoted).to.eql(true);",
+									"        pm.expect(lewandowski.failedSubjects).to.be.an('array').that.is.empty;",
+									"    }",
+									"    ",
+									"    if (dabrowska) {",
+									"        pm.expect(dabrowska.promoted).to.eql(true); // ECTS niezaliczone = 6, pozostało 24 (warunkowo zdane)",
+									"        pm.expect(dabrowska.failedSubjects[0].name).to.eql('Matematyka dyskretna');",
+									"    }",
+									"    ",
+									"    if (zielinski) {",
+									"        pm.expect(zielinski.promoted).to.eql(false); // ECTS niezaliczone = 13 (PO: 7 + Matematyka: 6), pozostało 17 (brak promocji)",
+									"    }",
+									"    ",
+									"    if (kowalski) {",
+									"        pm.expect(kowalski.promoted).to.eql(false); // Semestr 7 nie podlega promocji automatycznej",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/semester-settlement?academicYear=2024/2025",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"semester-settlement"
+							],
+							"query": [
+								{
+									"key": "academicYear",
+									"value": "2024/2025",
+									"description": "Rok akademicki do rozliczenia"
+								}
+							]
+						},
+						"description": "Wywołuje rozliczenie semestru dla roku akademickiego 2024/2025.\n* Lewandowski (sem. 3) - pomyślnie zdane przedmioty -> promoted = true\n* Dąbrowska (sem. 3) - 1 przedmiot oblany (6 ECTS), zaliczone 24 ECTS -> promoted = true\n* Zieliński (sem. 3) - 2 przedmioty oblane (13 ECTS), zaliczone 17 ECTS -> promoted = false\n* Kowalski (sem. 7) - zaliczone wszystko, ale semestr 7 -> promoted = false"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "S4: Wypłata dla prowadzących (Instructor Payment)",
+			"description": "Scenariusz 4: Wyliczenie miesięcznego wynagrodzenia dla prowadzących w danym roku akademickim.\nWynagrodzenie liczone jest jako: suma godzin tygodniowo * 4 * stawka za godzinę (prof: 150, dr hab: 120, dr: 100, mgr: 80 PLN).",
+			"item": [
+				{
+					"name": "Wypłata dla roku 2024/2025",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Salary check for 2024/2025\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    var prof = jsonData.find(i => i.lastName === 'Profesorski');",
+									"    var doc = jsonData.find(i => i.lastName === 'Doktorska');",
+									"    var mag = jsonData.find(i => i.lastName === 'Magistrowski');",
+									"    ",
+									"    if (prof) {",
+									"        pm.expect(prof.hoursPerWeek).to.eql(5);",
+									"        pm.expect(prof.salary).to.eql(3000.0); // 5h * 4 * 150 = 3000.0",
+									"    }",
+									"    ",
+									"    if (doc) {",
+									"        pm.expect(doc.hoursPerWeek).to.eql(4);",
+									"        pm.expect(doc.salary).to.eql(1600.0); // 4h * 4 * 100 = 1600.0",
+									"    }",
+									"    ",
+									"    if (mag) {",
+									"        pm.expect(mag.hoursPerWeek).to.eql(6);",
+									"        pm.expect(mag.salary).to.eql(1920.0); // 6h * 4 * 80 = 1920.0",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/instructor-payment?academicYear=2024/2025",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"instructor-payment"
+							],
+							"query": [
+								{
+									"key": "academicYear",
+									"value": "2024/2025"
+								}
+							]
+						},
+						"description": "Wyliczenie wynagrodzeń w roku 2024/2025. Powinno zsumować godziny dla prof. Profesorskiego (5h -> 3000 PLN) oraz wyliczyć stawki dla dr Doktorskiej (1600 PLN) i mgr Magistrowskiego (1920 PLN)."
+					},
+					"response": []
+				},
+				{
+					"name": "Wypłata dla roku 2023/2024",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Salary check for 2023/2024\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // Powinna być tylko Doktorska z 10 godzinami",
+									"    pm.expect(jsonData.length).to.eql(1);",
+									"    var doc = jsonData[0];",
+									"    pm.expect(doc.lastName).to.eql('Doktorska');",
+									"    pm.expect(doc.hoursPerWeek).to.eql(10);",
+									"    pm.expect(doc.salary).to.eql(4000.0); // 10h * 4 * 100 = 4000.0",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/instructor-payment?academicYear=2023/2024",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"instructor-payment"
+							],
+							"query": [
+								{
+									"key": "academicYear",
+									"value": "2023/2024"
+								}
+							]
+						},
+						"description": "Wyliczenie wynagrodzeń w roku 2023/2024. W tym roku obsadę miała tylko dr Doktorska (10h tygodniowo, co daje 4000 PLN)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "S5: Ranking studentów (Scholarship Ranking)",
+			"description": "Scenariusz 5: Tworzenie rankingu studentów na podstawie średniej ważonej z ocen końcowych (END) z poprzedniego semestru.\nZwraca top 10 studentów z danego kierunku studiów.",
+			"item": [
+				{
+					"name": "Ranking dla Informatyki",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Check ranking sorting and values\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // Powinno być posortowane malejąco po średniej ważonej",
+									"    for (var i = 0; i < jsonData.length - 1; i++) {",
+									"        pm.expect(jsonData[i].weightedAverage).to.be.at.least(jsonData[i+1].weightedAverage);",
+									"    }",
+									"    ",
+									"    // Sprawdzenie czołowych miejsc",
+									"    pm.expect(jsonData[0].lastName).to.eql('Lewandowski');",
+									"    pm.expect(jsonData[0].weightedAverage).to.be.closeTo(4.77, 0.05);",
+									"    ",
+									"    pm.expect(jsonData[1].lastName).to.eql('Dabrowska');",
+									"    pm.expect(jsonData[1].weightedAverage).to.be.closeTo(3.77, 0.05);",
+									"    ",
+									"    pm.expect(jsonData[2].lastName).to.eql('Zielinski');",
+									"    pm.expect(jsonData[2].weightedAverage).to.be.closeTo(3.13, 0.05);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/scholarship-ranking?fieldOfStudy=Informatyka",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"scholarship-ranking"
+							],
+							"query": [
+								{
+									"key": "fieldOfStudy",
+									"value": "Informatyka",
+									"description": "Kierunek studiów"
+								}
+							]
+						},
+						"description": "Wywołanie rankingu dla kierunku 'Informatyka'. Powinno wyświetlić studentów w kolejności: Lewandowski (~4.77), Dąbrowska (~3.77), Zieliński (~3.13). Studenci semestru 7 mają średnią 0.0 z powodu braku ocen z poprzedniego (6.) semestru."
+					},
+					"response": []
+				},
+				{
+					"name": "Ranking dla Automatyki",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Check ranking for Automatyka\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    pm.expect(jsonData.length).to.eql(1);",
+									"    ",
+									"    var student = jsonData[0];",
+									"    pm.expect(student.lastName).to.eql('Mazur');",
+									"    pm.expect(student.weightedAverage).to.eql(5.0);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/scholarship-ranking?fieldOfStudy=Automatyka",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"scholarship-ranking"
+							],
+							"query": [
+								{
+									"key": "fieldOfStudy",
+									"value": "Automatyka"
+								}
+							]
+						},
+						"description": "Wywołanie rankingu dla kierunku 'Automatyka'. Powinna pojawić się tylko studentka Ewa Mazur z idealną średnią 5.0."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "S6: Identyfikacja przedmiotów problemowych",
+			"description": "Scenariusz 6: Wykrywanie przedmiotów o wyjątkowo niskiej zdawalności.\nBierze pod uwagę tylko pierwszą próbę oceny końcowej (END). Przedmiot kwalifikuje się, jeśli w każdym ze wskazanych lat odsetek ocen niedostatecznych (< 3.0) przekracza zadany próg (threshold).",
+			"item": [
+				{
+					"name": "Przedmioty problemowe (2021/2022 i 2022/2023, próg 0.3)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Check problematic subjects\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // Powinny być dokładnie 2 przedmioty kwalifikujące się",
+									"    pm.expect(jsonData.length).to.eql(2);",
+									"    ",
+									"    var statystyka = jsonData.find(s => s.subjectName === 'Statystyka');",
+									"    var rachunek = jsonData.find(s => s.subjectName === 'Rachunek rozniczkowy');",
+									"    var historia = jsonData.find(s => s.subjectName === 'Historia informatyki');",
+									"    ",
+									"    pm.expect(statystyka).to.not.be.undefined;",
+									"    pm.expect(statystyka.failureRateByYear['2021/2022']).to.eql(75.0);",
+									"    pm.expect(statystyka.failureRateByYear['2022/2023']).to.eql(66.7);",
+									"    ",
+									"    pm.expect(rachunek).to.not.be.undefined;",
+									"    pm.expect(rachunek.failureRateByYear['2021/2022']).to.eql(75.0);",
+									"    ",
+									"    pm.expect(historia).to.be.undefined; // Nie powinien się kwalifikować, bo w 2022/2023 miał 0.0% oblanych",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/problematic-subjects?academicYears=2021/2022,2022/2023&threshold=0.3",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"problematic-subjects"
+							],
+							"query": [
+								{
+									"key": "academicYears",
+									"value": "2021/2022,2022/2023",
+									"description": "Lata akademickie rozdzielone przecinkiem"
+								},
+								{
+									"key": "threshold",
+									"value": "0.3",
+									"description": "Próg odsetka niezdawalności (0.3 oznacza 30%)"
+								}
+							]
+						},
+						"description": "Wyszukuje przedmioty problemowe w latach 2021/2022 oraz 2022/2023 z progiem 30% niezdawalności.\n* Statystyka (niezdawalność: 75% i 66.7%) -> KWALIFIKUJE\n* Rachunek różniczkowy (niezdawalność: 75% i 66.7%) -> KWALIFIKUJE\n* Historia informatyki (niezdawalność: 100% i 0%) -> ODPADA, bo w drugim roku zdali wszyscy"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "S7: Detekcja rezygnacji (Resignation Detection)",
+			"description": "Scenariusz 7: Wykrywanie studentów, którzy prawdopodobnie zrezygnowali ze studiów.\nKryteria: status ACTIVE, brak jakiejkolwiek oceny (Grade) w podanym roku akademickim, data wpisu (enrollmentDate) sprzed ponad 3 miesięcy (wykluczenie nowo przyjętych).",
+			"item": [
+				{
+					"name": "Detekcja rezygnacji dla 2024/2025",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Check resignation report structure\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // Powinno zawierać studentów, którzy nie mają ocen w 2024/2025",
+									"    var widmo = jsonData.find(s => s.lastName === 'Widmo');",
+									"    var mazur = jsonData.find(s => s.lastName === 'Mazur');",
+									"    var swiezak = jsonData.find(s => s.lastName === 'Swiezak');",
+									"    ",
+									"    pm.expect(widmo).to.not.be.undefined;",
+									"    pm.expect(widmo.lastGradeDate).to.eql(\"2022-06-15\");",
+									"    ",
+									"    pm.expect(mazur).to.not.be.undefined;",
+									"    ",
+									"    pm.expect(swiezak).to.be.undefined; // Wykluczony (zapisany niedawno - w maju 2026)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/resignation-detection?academicYear=2024/2025",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"resignation-detection"
+							],
+							"query": [
+								{
+									"key": "academicYear",
+									"value": "2024/2025"
+								}
+							]
+						},
+						"description": "Wyszukuje studentów podejrzanych o rezygnację w roku 2024/2025.\n* Widmo (indeks 500001) -> POJAWIA SIĘ (ostatnia ocena w 2022)\n* Świeżak (indeks 500002) -> NIE POJAWIA SIĘ (zapisany < 3 mies. wstecz)\n* Studenci z ocenami w 2024/2025 (Kowalski, Nowak, Lewandowski, Dabrowska, Zielinski) -> NIE POJAWIAJĄ SIĘ"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "S8: Nominacja prowadzącego (Instructor Nomination)",
+			"description": "Scenariusz 8: Rekomendowanie najlepszego kandydata na prowadzącego dla danego przedmiotu w nowym roku akademickim.\nKryteria:\n1. Tytuł naukowy musi pozwalać na pełnienie roli (wykład: dr, dr hab, prof; ćwiczenia/lab: wszyscy, w tym mgr).\n2. Planowane obciążenie w docelowym roku nie przekracza limitu (maxHoursPerWeek).\n3. Sortowanie: najpierw ci, którzy najwięcej razy w przeszłości prowadzili ten przedmiot, następnie ci z mniejszym zaplanowanym obciążeniem w docelowym roku.",
+			"item": [
+				{
+					"name": "Nominacja LECTURER na rok 2025/2026 (limit 20h)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Check instructor nomination candidates\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // Doktorskiej powinno przejść, Profesorski odrzucony przez limit 20h (ma już 22h)",
+									"    var doc = jsonData.find(i => i.lastName === 'Doktorska');",
+									"    var prof = jsonData.find(i => i.lastName === 'Profesorski');",
+									"    ",
+									"    pm.expect(doc).to.not.be.undefined;",
+									"    pm.expect(doc.yearsWithSubject).to.eql(2);",
+									"    pm.expect(doc.hoursAlreadyPlanned).to.eql(4);",
+									"    ",
+									"    pm.expect(prof).to.be.undefined; // Wykluczony (22h >= 20h limitu)",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/nominate-instructor?subjectId=1&role=LECTURER&academicYear=2025/2026&maxHoursPerWeek=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"nominate-instructor"
+							],
+							"query": [
+								{
+									"key": "subjectId",
+									"value": "1",
+									"description": "ID przedmiotu (1 = Inżynieria Oprogramowania)"
+								},
+								{
+									"key": "role",
+									"value": "LECTURER",
+									"description": "Rola (wykładowca - wymaga dr, dr hab. lub prof.)"
+								},
+								{
+									"key": "academicYear",
+									"value": "2025/2026",
+									"description": "Docelowy rok akademicki"
+								},
+								{
+									"key": "maxHoursPerWeek",
+									"value": "20",
+									"description": "Maksymalny wymiar godzinowy w roku"
+								}
+							]
+						},
+						"description": "Rekomenduje kandydata na wykładowcę (LECTURER) przedmiotu o ID 1 na rok 2025/2026 przy limicie obciążenia 20 godzin.\n* dr Doktorska -> KANDYDATKA (2 lata doświadczenia, zaplanowane 4h w nowym roku)\n* prof. Profesorski -> ODRZUCONY (ma 22h, co przekracza limit 20h)\n* mgr Magistrowski -> ODRZUCONY (brak roli wykładowcy dla mgr)"
+					},
+					"response": []
+				},
+				{
+					"name": "Nominacja LECTURER na rok 2025/2026 (zwiększony limit 30h)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Check nomination with higher limit\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"    ",
+									"    // Przy limicie 30h oboje się kwalifikują",
+									"    pm.expect(jsonData.length).to.be.at.least(2);",
+									"    ",
+									"    // Sprawdzamy kolejność - oboje mają 2 lata doświadczenia, ale Doktorska ma mniejsze obciążenie (4h vs 22h)",
+									"    // Zatem Doktorska powinna być pierwsza",
+									"    pm.expect(jsonData[0].lastName).to.eql('Doktorska');",
+									"    pm.expect(jsonData[1].lastName).to.eql('Profesorski');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/scenario/nominate-instructor?subjectId=1&role=LECTURER&academicYear=2025/2026&maxHoursPerWeek=30",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"scenario",
+								"nominate-instructor"
+							],
+							"query": [
+								{
+									"key": "subjectId",
+									"value": "1"
+								},
+								{
+									"key": "role",
+									"value": "LECTURER"
+								},
+								{
+									"key": "academicYear",
+									"value": "2025/2026"
+								},
+								{
+									"key": "maxHoursPerWeek",
+									"value": "30"
+								}
+							]
+						},
+						"description": "Rekomenduje kandydata na wykładowcę przedmiotu ID 1 na rok 2025/2026 przy podwyższonym limicie obciążenia do 30 godzin. Przy tym limicie prof. Profesorski nie jest już odrzucony i obaj z dr Doktorską mają po 2 lata doświadczenia z tym przedmiotem, lecz to dr Doktorska wygrywa (jest pierwsza w rankingu) ze względu na mniejsze obciążenie (4h vs 22h)."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

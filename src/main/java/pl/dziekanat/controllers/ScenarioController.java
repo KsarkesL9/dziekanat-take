@@ -22,51 +22,50 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import pl.dziekanat.dto.GraduationResult;
-import pl.dziekanat.entities.Grade;
-import pl.dziekanat.entities.Student;
-import pl.dziekanat.entities.Subject;
-import pl.dziekanat.enums.GradeType;
-import pl.dziekanat.enums.StudentStatus;
-import pl.dziekanat.repositories.GradeRepository;
-import pl.dziekanat.repositories.StudentRepository;
-import pl.dziekanat.dto.SemesterSettlementResult;
-
 import pl.dziekanat.dto.InstructorNominationCandidate;
 import pl.dziekanat.dto.InstructorPaymentResult;
 import pl.dziekanat.dto.ProblematicSubjectResult;
 import pl.dziekanat.dto.ResignationDetectionResult;
 import pl.dziekanat.dto.ScholarshipRankingResult;
+import pl.dziekanat.dto.SemesterSettlementResult;
+import pl.dziekanat.entities.Grade;
 import pl.dziekanat.entities.Instructor;
+import pl.dziekanat.entities.Student;
+import pl.dziekanat.entities.Subject;
 import pl.dziekanat.entities.SubjectAssignment;
+import pl.dziekanat.enums.GradeType;
 import pl.dziekanat.enums.InstructorRole;
+import pl.dziekanat.enums.StudentStatus;
+import pl.dziekanat.repositories.GradeRepository;
+import pl.dziekanat.repositories.StudentRepository;
 import pl.dziekanat.repositories.SubjectAssignmentRepository;
 
 @Controller
 @RequestMapping("/scenario")
 public class ScenarioController {
-	
-	// Stawki godzinowe według tytułów 
-		private static final Map<String, Double> STAWKI_GODZINOWE = Map.of(
-				"prof.", 150.0,
-				"dr hab.", 120.0,
-				"dr", 100.0,
-				"mgr", 80.0
-		);
 
-		// W przypadku nieodnalezienie tytułu ustawiamy zero
-		private double ratePerHour(String title) {
-			if (title == null) {
-				return 0.0;
-			}
-			return STAWKI_GODZINOWE.getOrDefault(title, 0.0);
+	// stawki godzinowe wg tytulu (PLN) - edytuj tutaj w razie potrzeby
+	private static final Map<String, Double> STAWKI_GODZINOWE = Map.of(
+			"prof.", 150.0,
+			"dr hab.", 120.0,
+			"dr", 100.0,
+			"mgr", 80.0
+	);
+
+	// stawka godzinowa dla danego tytulu; 0 jesli tytul spoza tabeli
+	private double ratePerHour(String title) {
+		if (title == null) {
+			return 0.0;
 		}
+		return STAWKI_GODZINOWE.getOrDefault(title, 0.0);
+	}
 
 	@Autowired
 	StudentRepository studentRepo;
 
 	@Autowired
 	GradeRepository gradeRepo;
-	
+
 	@Autowired
 	SubjectAssignmentRepository assignmentRepo;
 
@@ -149,6 +148,7 @@ public class ScenarioController {
 		studentRepo.save(student);
 		return student;
 	}
+
 	// Scenariusz 3: Rozliczenie semestru
 	@PostMapping("/semester-settlement")
 	public @ResponseBody List<SemesterSettlementResult> settleSemester(@RequestParam String academicYear) {
@@ -214,7 +214,8 @@ public class ScenarioController {
 
 		return report;
 	}
-		// Scenariusz 4: Wyplata za zajecia dla instruktora
+
+	// Scenariusz 4: Wyplata za zajecia dla instruktora
 	@PostMapping("/instructor-payment")
 	public @ResponseBody List<InstructorPaymentResult> instructorPayment(@RequestParam String academicYear) {
 		// wszystkie obsady w danym roku akademickim (obojetna rola)
@@ -252,6 +253,7 @@ public class ScenarioController {
 
 		return report;
 	}
+
 	// Scenariusz 5: Ranking studentow i stypendia
 	@PostMapping("/scholarship-ranking")
 	public @ResponseBody List<ScholarshipRankingResult> scholarshipRanking(@RequestParam String fieldOfStudy) {
@@ -264,7 +266,7 @@ public class ScenarioController {
 				continue;
 			}
 
-			// oceny końcowe z poprzedniego semestru studenta
+			// oceny END z poprzedniego semestru studenta
 			Integer prevSemester = student.getSemester() - 1;
 			List<Grade> grades = gradeRepo.findByStudentId(student.getId());
 			List<Grade> endGrades = new ArrayList<>();
@@ -316,13 +318,14 @@ public class ScenarioController {
 			@RequestParam List<String> academicYears,
 			@RequestParam double threshold) {
 
-		// subjectId -> (rok -> [total, oblane]) - tylko END, attemptNumber=1
+		// dla kazdego przedmiotu i roku zliczamy liczbe ocen END (tylko proba 1) i liczbe oblanych
 		Map<Long, Map<String, int[]>> subjectYearStats = new HashMap<>();
 		Map<Long, Subject> subjectsById = new HashMap<>();
 
 		for (String year : academicYears) {
 			List<Grade> grades = gradeRepo.findByAcademicYearAndGradeType(year, GradeType.END);
 			for (Grade g : grades) {
+				// bierzemy tylko pierwsze podejscia
 				if (g.getAttemptNumber() == null || g.getAttemptNumber() != 1) continue;
 				if (g.getSubject() == null) continue;
 
@@ -334,7 +337,7 @@ public class ScenarioController {
 						.computeIfAbsent(year, k -> new int[2]);
 
 				int[] stats = subjectYearStats.get(subjectId).get(year);
-				stats[0]++;
+				stats[0]++; // wszystkie oceny
 				if (g.getValue() != null && g.getValue() < 3.0) stats[1]++; // oblane
 			}
 		}
@@ -344,8 +347,8 @@ public class ScenarioController {
 		for (Long subjectId : subjectYearStats.keySet()) {
 			Map<String, int[]> yearStats = subjectYearStats.get(subjectId);
 
-			// przedmiot kwalifikuje sie tylko gdy ma dane we WSZYSTKICH latach
-			// i w kazdym z nich odsetek >= threshold
+			// przedmiot kwalifikuje sie tylko gdy ma dane w kazdym analizowanym roku
+			// i w kazdym z nich odsetek oblanych przekracza prog
 			boolean qualifies = true;
 			Map<String, Double> failureRateByYear = new LinkedHashMap<>();
 
@@ -356,7 +359,7 @@ public class ScenarioController {
 					break;
 				}
 				double rate = (double) stats[1] / stats[0];
-				// zaokraglamy do 1 miejsca po przecinku (np. 33.3)
+				// odsetek niezdawalnosci w procentach, zaokraglony do jednego miejsca
 				failureRateByYear.put(year, Math.round(rate * 1000.0) / 10.0);
 				if (rate < threshold) {
 					qualifies = false;
@@ -365,7 +368,7 @@ public class ScenarioController {
 
 			if (!qualifies) continue;
 
-			// prowadzacy w analizowanym okresie (deduplikacja po nazwisku)
+			// prowadzacy w analizowanym okresie
 			Set<String> instructorNames = new LinkedHashSet<>();
 			List<SubjectAssignment> assignments = assignmentRepo.findBySubjectId(subjectId);
 			for (SubjectAssignment sa : assignments) {
@@ -395,7 +398,7 @@ public class ScenarioController {
 	public @ResponseBody List<ResignationDetectionResult> resignationDetection(
 			@RequestParam String academicYear) {
 
-		// zbieramy ID studentow, ktorzy maja jakikolwiek wpis oceny w danym roku
+		// zbieramy id studentow, ktorzy maja jakikolwiek wpis oceny w danym roku
 		List<Grade> gradesInYear = gradeRepo.findByAcademicYear(academicYear);
 		Set<Long> studentIdsWithGrades = new HashSet<>();
 		for (Grade g : gradesInYear) {
@@ -431,7 +434,7 @@ public class ScenarioController {
 			report.add(row);
 		}
 
-		// sortuj malejaco po dacie ostatniej oceny (null = brak ocen -> na koniec)
+		// sortuj malejaco po dacie ostatniej oceny (brak ocen na koniec)
 		report.sort((a, b) -> {
 			if (a.getLastGradeDate() == null && b.getLastGradeDate() == null) return 0;
 			if (a.getLastGradeDate() == null) return 1;
@@ -442,7 +445,7 @@ public class ScenarioController {
 		return report;
 	}
 
-	// Pomocnicza metoda: czy dany tytul kwalifikuje prowadzacego do roli
+	// pomocnicza metoda: czy dany tytul kwalifikuje prowadzacego do roli
 	private boolean titleQualifiesForRole(String title, InstructorRole role) {
 		if (title == null) return false;
 		if (role == InstructorRole.LECTURER) {
@@ -462,10 +465,10 @@ public class ScenarioController {
 			@RequestParam String academicYear,
 			@RequestParam(defaultValue = "20") int maxHoursPerWeek) {
 
-		// wszystkie przeszle obsady dla tego przedmiotu (bez docelowego roku)
+		// wszystkie przeszle obsady tego przedmiotu (bez docelowego roku)
 		List<SubjectAssignment> subjectHistory = assignmentRepo.findBySubjectId(subjectId);
 
-		// zliczamy ile roznych lat w przeszlosci kazdy instruktor prowadzil ten przedmiot
+		// liczymy ile roznych lat w przeszlosci kazdy instruktor prowadzil ten przedmiot
 		Map<Long, Set<String>> instructorYears = new HashMap<>();
 		Map<Long, Instructor> instructorsById = new HashMap<>();
 		for (SubjectAssignment sa : subjectHistory) {
@@ -486,14 +489,14 @@ public class ScenarioController {
 			// filtr 1: tytul musi kwalifikowac do danej roli
 			if (!titleQualifiesForRole(instructor.getTitle(), role)) continue;
 
-			// filtr 2: sprawdz obciazenie w docelowym roku
+			// filtr 2: sprawdzamy obciazenie w docelowym roku
 			List<SubjectAssignment> yearLoad =
 					assignmentRepo.findByInstructorIdAndAcademicYear(instructorId, academicYear);
 			int totalHours = 0;
 			for (SubjectAssignment sa : yearLoad) {
 				if (sa.getHoursPerWeek() != null) totalHours += sa.getHoursPerWeek();
 			}
-			if (totalHours >= maxHoursPerWeek) continue; // przekroczony prog
+			if (totalHours >= maxHoursPerWeek) continue; // przekroczony prog obciazenia
 
 			InstructorNominationCandidate candidate = new InstructorNominationCandidate();
 			candidate.setFirstName(instructor.getFirstName());
@@ -504,7 +507,7 @@ public class ScenarioController {
 			candidates.add(candidate);
 		}
 
-		// sortuj: najpierw najwyzsze doswiadczenie, przy remisie najmniejsze obciazenie
+		// sortujemy: najpierw najwieksze doswiadczenie, przy remisie najmniejsze obciazenie
 		candidates.sort((a, b) -> {
 			int cmp = Integer.compare(b.getYearsWithSubject(), a.getYearsWithSubject());
 			if (cmp != 0) return cmp;

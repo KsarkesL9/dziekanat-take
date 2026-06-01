@@ -10,14 +10,14 @@ import lombok.Setter;
 @Setter
 public class ProblematicSubjectResult {
 
-	// Dane przedmiotu
+	// dane przedmiotu
 	private String subjectName;
 	private Integer semesterNumber;
 	private Integer ects;
 
-	// Lista prowadzących w analizowanym okresie (format: "tytuł imię nazwisko")
+	// lista prowadzacych w analizowanym okresie (format: tytul imie nazwisko)
 	private List<String> instructors;
 
-	// Niezdawalność rok do roku (rok akademicki -> % niezdawalności, 0-100)
+	// niezdawalnosc rok do roku (rok akademicki -> procent niezdawalnosci, 0-100)
 	private Map<String, Double> failureRateByYear;
 }
