@@ -10,7 +10,6 @@ import lombok.Setter;
 @Setter
 public class ProblematicSubjectResult {
 
-	// dane przedmiotu
 	private String subjectName;
 	private Integer semesterNumber;
 	private Integer ects;
