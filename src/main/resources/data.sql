@@ -39,7 +39,7 @@ insert into grade(id, grade_value, date_issued, grade_type, academic_year, attem
 
 
 -- Dane testowe dla Scenariusza 2: Powrót studenta z urlopu dziekańskiego
--- POST /scenario/return-from-leave?indexNumber={indeks}&semester={nr}
+-- PUT /scenario/return-from-leave?indexNumber={indeks}&semester={nr}
 
 insert into student(id, first_name, last_name, index_number, email, semester, field_of_study, status, enrollment_date, graduation_date)
   values (3, 'Piotr', 'Wisniewski', '777777', 'piotr.wisniewski@example.com', 4, 'Informatyka', 'DEAN_LEAVE', '2023-10-01', null);
@@ -87,7 +87,7 @@ insert into grade(id, grade_value, date_issued, grade_type, academic_year, attem
 
 
 -- Dane testowe dla Scenariusza 4: Wypłata za zajęcia dla instruktora
--- POST /scenario/instructor-payment?academicYear=2024/2025
+-- GET /scenario/instructor-payment?academicYear=2024/2025
 
 insert into instructor(id, first_name, last_name, email, title, department)
   values (1, 'Adam',   'Profesorski',  'a.profesorski@example.com',  'prof.', 'Informatyka');
@@ -113,7 +113,7 @@ insert into subject_assignment(id, academic_year, role, hours_per_week, subject_
 
 
 -- Dane testowe dla Scenariusza 5: Ranking studentów i stypendia
--- POST /scenario/scholarship-ranking?fieldOfStudy=Informatyka
+-- GET /scenario/scholarship-ranking?fieldOfStudy=Informatyka
 
 -- przedmioty z 2. semestru (poprzedni dla studentów z sem. 3)
 insert into subject(id, name, ects, semester_number) values (8,  'Analiza matematyczna',       8, 2);
@@ -167,7 +167,7 @@ insert into grade(id, grade_value, date_issued, grade_type, academic_year, attem
 
 
 -- Dane testowe dla Scenariusza 6: Identyfikacja przedmiotów problemowych
--- POST /scenario/problematic-subjects?academicYears=2021/2022,2022/2023&threshold=0.3
+-- GET /scenario/problematic-subjects?academicYears=2021/2022,2022/2023&threshold=0.3
 
 insert into subject(id, name, ects, semester_number) values (12, 'Statystyka',              5, 4);
 insert into subject(id, name, ects, semester_number) values (13, 'Rachunek rozniczkowy',    6, 2);
@@ -249,7 +249,7 @@ insert into grade(id, grade_value, date_issued, grade_type, academic_year, attem
 
 
 -- Dane testowe dla Scenariusza 7: Detekcja rezygnacji
--- POST /scenario/resignation-detection?academicYear=2024/2025
+-- GET /scenario/resignation-detection?academicYear=2024/2025
 
 -- student Widmo: brak ocen w 2024/2025, enrollment dawno -> wykrycie rezygnacji
 insert into student(id, first_name, last_name, index_number, email, semester, field_of_study, status, enrollment_date, graduation_date)
@@ -264,7 +264,7 @@ insert into grade(id, grade_value, date_issued, grade_type, academic_year, attem
 
 
 -- Dane testowe dla Scenariusza 8: Nominacja prowadzącego przedmiotu w nowym roku
--- POST /scenario/nominate-instructor
+-- GET /scenario/nominate-instructor
 
 -- historia obłożeń subject 1 (Inżynieria)
 insert into subject_assignment(id, academic_year, role, hours_per_week, subject_id, instructor_id)

@@ -14,7 +14,9 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -72,7 +74,7 @@ public class ScenarioController {
 		return result;
 	}
 
-	// stawki godzinowe wg tytulu (PLN) - edytuj tutaj w razie potrzeby
+	// stawki godzinowe wg tytulu
 	private static final Map<String, Double> STAWKI_GODZINOWE = Map.of(
 			"prof.", 150.0,
 			"dr hab.", 120.0,
@@ -132,7 +134,7 @@ public class ScenarioController {
 	}
 
 	// Scenariusz 2: Powrot studenta z urlopu dziekanskiego
-	@PostMapping("/return-from-leave")
+	@PutMapping("/return-from-leave")
 	public Student returnFromLeave(@RequestParam String indexNumber,
 			@RequestParam Integer semester) {
 		List<Student> found = studentRepo.findByIndexNumber(indexNumber);
@@ -194,7 +196,7 @@ public class ScenarioController {
 	}
 
 	// Scenariusz 4: Wyplata za zajecia dla instruktora
-	@PostMapping("/instructor-payment")
+	@GetMapping("/instructor-payment")
 	public List<InstructorPaymentResult> instructorPayment(@RequestParam String academicYear) {
 		List<SubjectAssignment> assignments = assignmentRepo.findByAcademicYear(academicYear);
 
@@ -227,7 +229,7 @@ public class ScenarioController {
 	}
 
 	// Scenariusz 5: Ranking studentow i stypendia
-	@PostMapping("/scholarship-ranking")
+	@GetMapping("/scholarship-ranking")
 	public List<ScholarshipRankingResult> scholarshipRanking(@RequestParam String fieldOfStudy) {
 		List<ScholarshipRankingResult> report = new ArrayList<>();
 
@@ -258,7 +260,7 @@ public class ScenarioController {
 	}
 
 	// Scenariusz 6: Identyfikacja przedmiotow problemowych
-	@PostMapping("/problematic-subjects")
+	@GetMapping("/problematic-subjects")
 	public List<ProblematicSubjectResult> problematicSubjects(
 			@RequestParam List<String> academicYears,
 			@RequestParam double threshold) {
@@ -326,7 +328,7 @@ public class ScenarioController {
 	}
 
 	// Scenariusz 7: Detekcja rezygnacji
-	@PostMapping("/resignation-detection")
+	@GetMapping("/resignation-detection")
 	public List<ResignationDetectionResult> resignationDetection(
 			@RequestParam String academicYear) {
 
@@ -377,7 +379,7 @@ public class ScenarioController {
 	}
 
 	// Scenariusz 8: Nominacja prowadzacego przedmiotu w nowym roku akademickim
-	@PostMapping("/nominate-instructor")
+	@GetMapping("/nominate-instructor")
 	public List<InstructorNominationCandidate> nominateInstructor(
 			@RequestParam Long subjectId,
 			@RequestParam InstructorRole role,
