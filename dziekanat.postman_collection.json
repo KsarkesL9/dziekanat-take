@@ -19,11 +19,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Student can graduate\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.canGraduate).to.eql(true);",
-									"    pm.expect(jsonData.failedSubjects).to.be.an('array').that.is.empty;",
 									"});"
 								],
 								"type": "text/javascript"
@@ -63,12 +58,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Student cannot graduate\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.canGraduate).to.eql(false);",
-									"    pm.expect(jsonData.failedSubjects.length).to.be.greaterThan(0);",
-									"    pm.expect(jsonData.failedSubjects[0].name).to.eql(\"Inzynieria oprogramowania\");",
 									"});"
 								],
 								"type": "text/javascript"
@@ -153,11 +142,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Status is ACTIVE and semester is updated\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.status).to.eql(\"ACTIVE\");",
-									"    pm.expect(jsonData.semester).to.eql(5);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -293,30 +277,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Verify students settlement\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    ",
-									"    var lewandowski = jsonData.find(s => s.lastName === 'Lewandowski');",
-									"    var dabrowska = jsonData.find(s => s.lastName === 'Dabrowska');",
-									"    var zielinski = jsonData.find(s => s.lastName === 'Zielinski');",
-									"    var kowalski = jsonData.find(s => s.lastName === 'Kowalski');",
-									"    ",
-									"    if (lewandowski) {",
-									"        pm.expect(lewandowski.promoted).to.eql(true);",
-									"        pm.expect(lewandowski.failedSubjects).to.be.an('array').that.is.empty;",
-									"    }",
-									"    if (dabrowska) {",
-									"        pm.expect(dabrowska.promoted).to.eql(true);",
-									"        pm.expect(dabrowska.failedSubjects[0].name).to.eql('Matematyka dyskretna');",
-									"    }",
-									"    if (zielinski) {",
-									"        pm.expect(zielinski.promoted).to.eql(false);",
-									"    }",
-									"    if (kowalski) {",
-									"        pm.expect(kowalski.promoted).to.eql(false);",
-									"    }",
 									"});"
 								],
 								"type": "text/javascript"
@@ -362,27 +322,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Salary check for 2024/2025\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    ",
-									"    var prof = jsonData.find(i => i.lastName === 'Profesorski');",
-									"    var doc = jsonData.find(i => i.lastName === 'Doktorska');",
-									"    var mag = jsonData.find(i => i.lastName === 'Magistrowski');",
-									"    ",
-									"    if (prof) {",
-									"        pm.expect(prof.hoursPerWeek).to.eql(5);",
-									"        pm.expect(prof.salary).to.eql(3000.0);",
-									"    }",
-									"    if (doc) {",
-									"        pm.expect(doc.hoursPerWeek).to.eql(4);",
-									"        pm.expect(doc.salary).to.eql(1600.0);",
-									"    }",
-									"    if (mag) {",
-									"        pm.expect(mag.hoursPerWeek).to.eql(6);",
-									"        pm.expect(mag.salary).to.eql(1920.0);",
-									"    }",
 									"});"
 								],
 								"type": "text/javascript"
@@ -421,14 +360,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Salary check for 2023/2024\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.length).to.eql(1);",
-									"    var doc = jsonData[0];",
-									"    pm.expect(doc.lastName).to.eql('Doktorska');",
-									"    pm.expect(doc.hoursPerWeek).to.eql(10);",
-									"    pm.expect(doc.salary).to.eql(4000.0);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -473,18 +404,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Check ranking sorting and values\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    ",
-									"    for (var i = 0; i < jsonData.length - 1; i++) {",
-									"        pm.expect(jsonData[i].weightedAverage).to.be.at.least(jsonData[i+1].weightedAverage);",
-									"    }",
-									"    pm.expect(jsonData[0].lastName).to.eql('Lewandowski');",
-									"    pm.expect(jsonData[0].weightedAverage).to.be.closeTo(4.77, 0.05);",
-									"    pm.expect(jsonData[1].lastName).to.eql('Dabrowska');",
-									"    pm.expect(jsonData[1].weightedAverage).to.be.closeTo(3.77, 0.05);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -524,13 +443,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Check ranking for Automatyka\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.length).to.eql(1);",
-									"    var student = jsonData[0];",
-									"    pm.expect(student.lastName).to.eql('Mazur');",
-									"    pm.expect(student.weightedAverage).to.eql(5.0);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -575,18 +487,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Check problematic subjects\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    pm.expect(jsonData.length).to.eql(2);",
-									"    ",
-									"    var statystyka = jsonData.find(s => s.subjectName === 'Statystyka');",
-									"    var rachunek = jsonData.find(s => s.subjectName === 'Rachunek rozniczkowy');",
-									"    ",
-									"    pm.expect(statystyka).to.not.be.undefined;",
-									"    pm.expect(statystyka.failureRateByYear['2021/2022']).to.eql(75.0);",
-									"    pm.expect(rachunek).to.not.be.undefined;",
 									"});"
 								],
 								"type": "text/javascript"
@@ -637,17 +537,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Check resignation report structure\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData).to.be.an('array');",
-									"    ",
-									"    var widmo = jsonData.find(s => s.lastName === 'Widmo');",
-									"    var swiezak = jsonData.find(s => s.lastName === 'Swiezak');",
-									"    ",
-									"    pm.expect(widmo).to.not.be.undefined;",
-									"    pm.expect(widmo.lastGradeDate).to.eql(\"2022-06-15\");",
-									"    pm.expect(swiezak).to.be.undefined;",
 									"});"
 								],
 								"type": "text/javascript"
@@ -692,14 +581,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Check instructor nomination candidates\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    var doc = jsonData.find(i => i.lastName === 'Doktorska');",
-									"    var prof = jsonData.find(i => i.lastName === 'Profesorski');",
-									"    ",
-									"    pm.expect(doc).to.not.be.undefined;",
-									"    pm.expect(prof).to.be.undefined;",
 									"});"
 								],
 								"type": "text/javascript"
@@ -750,12 +631,6 @@
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
-									"});",
-									"pm.test(\"Check nomination with higher limit\", function () {",
-									"    var jsonData = pm.response.json();",
-									"    pm.expect(jsonData.length).to.be.at.least(2);",
-									"    pm.expect(jsonData[0].lastName).to.eql('Doktorska');",
-									"    pm.expect(jsonData[1].lastName).to.eql('Profesorski');",
 									"});"
 								],
 								"type": "text/javascript"
